@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Build Status](https://github.com/free4fun/nft-rental/workflows/CI/badge.svg)](https://github.com/free4fun/nft-rental/actions)
+![Build Status](https://github.com/free4fun/nft-rental/actions/workflows/ci.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/free4fun/nft-rental/badge.svg?branch=main)](https://coveralls.io/github/free4fun/nft-rental?branch=main)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Solidity](https://img.shields.io/badge/Solidity-%5E0.8.28-brightgreen)](https://docs.soliditylang.org/)
