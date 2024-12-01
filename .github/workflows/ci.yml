@@ -1,0 +1,150 @@
+name: NFT Rental CI
+
+on:
+push:
+  branches:
+    - main
+    - develop
+  paths-ignore:
+    - '**.md'
+    - 'docs/**'
+pull_request:
+  branches:
+    - main
+    - develop
+  paths-ignore:
+    - '**.md'
+    - 'docs/**'
+
+jobs:
+test:
+  name: Test Smart Contracts
+  runs-on: ubuntu-latest
+  
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Compile contracts
+      run: yarn compile
+      
+    - name: Run linter
+      run: |
+        yarn lint:sol
+        yarn lint:ts
+        
+    - name: Run tests with coverage
+      run: yarn test:coverage
+      env:
+        REPORT_GAS: true
+        
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage/lcov.info
+        flags: smart-contracts
+        fail_ci_if_error: true
+
+analyze:
+  name: Security Analysis
+  runs-on: ubuntu-latest
+  permissions:
+    contents: read
+    security-events: write
+    
+  steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run Slither
+      uses: crytic/slither-action@v0.3.0
+      continue-on-error: true
+      id: slither
+      with:
+        node-version: 16
+        sarif: results.sarif
+        
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: results.sarif
+        
+size-check:
+  name: Contract Size Check
+  runs-on: ubuntu-latest
+  
+  steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Check contract sizes
+      run: npx hardhat size-contracts
+
+gas-report:
+  name: Gas Report
+  runs-on: ubuntu-latest
+  
+  steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Generate gas report
+      run: yarn test
+      env:
+        REPORT_GAS: true
+        COINMARKETCAP_API_KEY: ${{ secrets.COINMARKETCAP_API_KEY }}
+        
+    - name: Upload gas report
+      uses: actions/upload-artifact@v3
+      with:
+        name: gas-report
+        path: gas-report.txt
+
+notify:
+  name: Notification
+  needs: [test, analyze, size-check, gas-report]
+  runs-on: ubuntu-latest
+  if: always()
+  
+  steps:
+    - name: Check build matrix status
+      if: ${{ contains(needs.*.result, 'failure') }}
+      run: exit 1
+      
+    - name: Notify on Discord
+      if: always()
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ job.status }}
+        title: "NFT Rental CI Pipeline"
+        description: |
+          Branch: ${{ github.ref }}
+          Commit: ${{ github.sha }}
+          Author: ${{ github.actor }}
