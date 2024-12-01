@@ -1,0 +1,36 @@
+name: Security Audit
+
+on:
+schedule:
+  - cron: '0 0 * * 0' # Run weekly
+workflow_dispatch:
+
+jobs:
+audit:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+        cache: 'yarn'
+    
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+    
+    - name: Run npm audit
+      run: yarn audit
+      
+    - name: Run Mythril
+      uses: consensys/mythril-action@v1
+      with:
+        mode: quick
+        
+    - name: Run MythX
+      if: github.event_name == 'workflow_dispatch'
+      uses: consensys/mythx-cli-action@v1
+      with:
+        access-token: ${{ secrets.MYTHX_ACCESS_TOKEN }}
+        mode: deep
