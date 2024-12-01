@@ -11,7 +11,7 @@
 
 1. Create `.env` file:
 ```bash
-PRIVATE_KEY=your_private_khttps://discord.com/channels/336322535052541952/336322535052541952ey
+PRIVATE_KEY=your_private_key
 SEPOLIA_RPC_URL=your_sepolia_rpc_url
 MAINNET_RPC_URL=your_mainnet_rpc_url
 ETHERSCAN_API_KEY=your_etherscan_key
