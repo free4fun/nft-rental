@@ -1,4 +1,5 @@
-import { HardhatUserConfig } from "hardhat/config";
+import "@nomiclabs/hardhat-etherscan";
+import { HardhatUserConfig } from "hardhat/types";
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-gas-reporter";
