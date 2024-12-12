@@ -3,9 +3,10 @@ pragma solidity 0.8.28;
 
 import "../interfaces/INFTLibrary.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./SafeNFTTransferLibrary.sol";
 
 contract NFTLibrary is INFTLibrary, ReentrancyGuard {
-    using SafeNFTTransfer for address;
+    using SafeNFTTransferLibrary for address;
 
     //Constants
     uint256 public constant CREATOR_FEE = 1000; //10%
